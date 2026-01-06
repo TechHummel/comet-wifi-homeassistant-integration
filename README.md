@@ -60,7 +60,7 @@ This integration uses the official Eurotronic REST API:
 
 ### Network Traffic Analysis
 
-The integration was developed by analyzing the network traffic of the official Eurotronic Smart Living 2.0 Android app (v1.5.1). All captured API requests and responses are documented in the `captured_network_traffic/` directory.
+The integration was developed by analyzing the network traffic of the official Eurotronic Smart Living 2.0 Android app (v1.5.1). 
 
 ## Temperature Values
 
@@ -134,20 +134,18 @@ custom_components/eurotronic_comet_wifi/
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Disclaimer
 
-This is an unofficial integration developed by reverse-engineering the official Eurotronic Smart Living 2.0 Android app. It is not affiliated with, endorsed by, or connected to Eurotronic Technology GmbH.
+This is an unofficial integration developed by reverse-engineering the official Eurotronic Smart Living 2.0 Android app. It is not affiliated with, endorsed by, or connected to Eurotronic.
 
 Use at your own risk. The author is not responsible for any damage to your devices or Home Assistant installation.
 
+## GenAI Disclaimer
+
+This integration was mostly created with generative AI. 
+
 ## Acknowledgments
 
-- Thanks to Eurotronic for creating the Comet WIFI thermostat
-- Inspired by the Home Assistant community and their excellent documentation
 - Network traffic analysis performed with Android Debug Bridge (ADB) and HTTP Toolkit
 
 ## Support
