@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Home Assistant
+home-assistant.log
+home-assistant_v2.db
+*.db-shm
+*.db-wal
+
+# APK Decompilation artifacts
+*.apk
+*.xapk
+xapk_extracted/
+apk_decompiled/
+decompiled_source/
+
+# Test credentials
+.env.test
+test_credentials.json
+extracted_libs/
+jadx/
+*.zip
+*.dex
+*.so
+
+# Temporary files
+*.tmp
+*.bak
+*.log

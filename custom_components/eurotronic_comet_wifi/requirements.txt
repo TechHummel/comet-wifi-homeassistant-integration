@@ -1,0 +1,3 @@
+# Requirements for Eurotronic Comet WIFI Integration
+aiohttp>=3.8.0
+paho-mqtt>=1.6.1

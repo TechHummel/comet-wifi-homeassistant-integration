@@ -1,0 +1,11 @@
+{
+  "domain": "eurotronic_comet_wifi",
+  "name": "Eurotronic Comet WIFI",
+  "codeowners": ["@homeassistant"],
+  "config_flow": true,
+  "documentation": "https://github.com/homeassistant/core/tree/dev/homeassistant/components/eurotronic_comet_wifi",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "requirements": ["aiohttp>=3.9.0", "paho-mqtt>=1.6.1"],
+  "version": "0.2.0"
+}

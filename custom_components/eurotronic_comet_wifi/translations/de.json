@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Eurotronic Comet WIFI Einrichtung",
+        "description": "Geben Sie Ihre Eurotronic Kontodaten ein",
+        "data": {
+          "email": "E-Mail",
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur Eurotronic API fehlgeschlagen",
+      "invalid_auth": "Ungültige E-Mail oder Passwort",
+      "unknown": "Unerwarteter Fehler aufgetreten"
+    },
+    "abort": {
+      "already_configured": "Konto ist bereits konfiguriert"
+    }
+  }
+}
