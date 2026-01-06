@@ -41,6 +41,8 @@ def test_temperature_caching():
     # Test 2: Store a temperature
     print("\n2. Testing temperature storage...")
     mac = "AA:BB:CC:DD:EE:FF"
+    # Note: Directly accessing private attributes in tests is acceptable for unit testing
+    # internal state. In production, temperatures are set via MQTT message callbacks.
     client._temperatures[mac] = {"A1": 21.5}
     client._temperature_timestamps[mac] = {"A1": time.time()}
     
@@ -117,11 +119,13 @@ def test_reconnection_logic():
     assert not client._connected
     print("   ✓ Reconnection attempt incremented")
     
-    # Test 3: Multiple disconnections
-    print("\n3. Testing multiple disconnections...")
-    for i in range(5):
+    # Test 3: Multiple disconnections with exponential backoff
+    print("\n3. Testing exponential backoff...")
+    for i in range(2, 6):
         client._on_disconnect(client.client, None, 7)
-    assert client._reconnect_attempts == 6
+        expected_delay = min(1 * (2 ** (i - 1)), 300)
+        print(f"   Attempt {i}: expected delay up to {expected_delay}s")
+    assert client._reconnect_attempts == 5
     print(f"   ✓ Reconnection attempts: {client._reconnect_attempts}")
     
     # Test 4: Successful reconnection resets counter

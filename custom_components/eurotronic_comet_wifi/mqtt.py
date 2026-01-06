@@ -79,12 +79,13 @@ class EurotronicMQTTClient:
             _LOGGER.debug("Unexpected disconnection from MQTT broker, code %d", rc)
             self._reconnect_attempts += 1
             
-            # Schedule reconnection with exponential backoff
-            delay = min(2 ** self._reconnect_attempts, self._max_reconnect_delay)
+            # Calculate reconnection delay with exponential backoff
+            # paho-mqtt client handles automatic reconnection via reconnect_delay_set()
+            delay = min(1 * (2 ** (self._reconnect_attempts - 1)), self._max_reconnect_delay)
             _LOGGER.debug(
-                "Will attempt reconnection in %d seconds (attempt %d)",
-                delay,
+                "Disconnected, automatic reconnection scheduled (attempt %d, delay up to %ds)",
                 self._reconnect_attempts,
+                delay,
             )
         self._connected = False
 
