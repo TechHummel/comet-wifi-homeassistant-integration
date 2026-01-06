@@ -52,7 +52,7 @@ class EurotronicMQTTClient:
         self._temperature_timestamps: dict[str, dict[str, float]] = {}  # Timestamp for each temperature
         self._device_data: dict[str, dict[str, Any]] = {}  # Store all MQTT data
         self._reconnect_attempts = 0
-        self._max_reconnect_delay = 300  # Max 5 minutes between reconnection attempts
+        self._max_reconnect_delay = 120  # Match paho-mqtt max reconnect delay
 
     def _on_connect(
         self, client: mqtt_client.Client, userdata: Any, flags: dict, rc: int
@@ -79,11 +79,12 @@ class EurotronicMQTTClient:
             _LOGGER.debug("Unexpected disconnection from MQTT broker, code %d", rc)
             self._reconnect_attempts += 1
             
-            # Calculate reconnection delay with exponential backoff
-            # paho-mqtt client handles automatic reconnection via reconnect_delay_set()
+            # Calculate expected reconnection delay for logging purposes
+            # Note: Actual reconnection is handled automatically by paho-mqtt
+            # via reconnect_delay_set() configured in async_connect()
             delay = min(1 * (2 ** (self._reconnect_attempts - 1)), self._max_reconnect_delay)
             _LOGGER.debug(
-                "Disconnected, automatic reconnection scheduled (attempt %d, delay up to %ds)",
+                "Disconnected, automatic reconnection in progress (attempt %d, estimated delay: %ds)",
                 self._reconnect_attempts,
                 delay,
             )

@@ -109,7 +109,7 @@ def test_reconnection_logic():
     # Test 1: Initial state
     print("\n1. Testing initial reconnection state...")
     assert client._reconnect_attempts == 0
-    assert client._max_reconnect_delay == 300
+    assert client._max_reconnect_delay == 120
     print("   ✓ Initial state correct")
     
     # Test 2: Simulate disconnection
@@ -123,7 +123,7 @@ def test_reconnection_logic():
     print("\n3. Testing exponential backoff...")
     for i in range(2, 6):
         client._on_disconnect(client.client, None, 7)
-        expected_delay = min(1 * (2 ** (i - 1)), 300)
+        expected_delay = min(1 * (2 ** (i - 1)), 120)
         print(f"   Attempt {i}: expected delay up to {expected_delay}s")
     assert client._reconnect_attempts == 5
     print(f"   ✓ Reconnection attempts: {client._reconnect_attempts}")
