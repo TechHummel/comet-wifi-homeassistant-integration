@@ -83,16 +83,42 @@ class EurotronicThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def current_temperature(self) -> float | None:
         """Return the current temperature.
+        
+        Returns the MQTT temperature if available (even if disconnected),
+        as long as the cached value is not too old (within 10 minutes).
+        This ensures temperature doesn't disappear during brief disconnections.
         """
-        if self._mqtt_client and self._mqtt_client.is_connected:
+        if self._mqtt_client:
+            # Try to get MQTT temperature (from cache or live)
             mqtt_temp = self._mqtt_client.get_temperature(self._mac, profile="A1")
+            
             if mqtt_temp is not None:
-                _LOGGER.debug(
-                    "Using MQTT temperature for %s: %.1f°C", self._mac, mqtt_temp
-                )
-                return mqtt_temp
+                # Check if the cached value is recent (within 10 minutes)
+                if self._mqtt_client.has_recent_temperature(self._mac, profile="A1", max_age=600):
+                    if self._mqtt_client.is_connected:
+                        _LOGGER.debug(
+                            "Using MQTT temperature for %s: %.1f°C", self._mac, mqtt_temp
+                        )
+                    else:
+                        age = self._mqtt_client.get_temperature_age(self._mac, profile="A1")
+                        _LOGGER.debug(
+                            "Using cached MQTT temperature for %s: %.1f°C (age: %.0fs)",
+                            self._mac,
+                            mqtt_temp,
+                            age,
+                        )
+                    return mqtt_temp
+                else:
+                    # Temperature is too old, log a warning
+                    age = self._mqtt_client.get_temperature_age(self._mac, profile="A1")
+                    if age is not None:
+                        _LOGGER.debug(
+                            "Cached temperature for %s is too old (%.0fs), reporting unavailable",
+                            self._mac,
+                            age,
+                        )
 
-        # No MQTT value available -> report unavailable
+        # No MQTT value available or too old -> report unavailable
         return None
 
     @property

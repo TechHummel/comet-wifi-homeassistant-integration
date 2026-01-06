@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any, Callable
 
 import paho.mqtt.client as mqtt_client
@@ -48,7 +49,10 @@ class EurotronicMQTTClient:
         self._connected = False
         self._subscription_topic = f"02/{username}/#"
         self._temperatures: dict[str, dict[str, float]] = {}
+        self._temperature_timestamps: dict[str, dict[str, float]] = {}  # Timestamp for each temperature
         self._device_data: dict[str, dict[str, Any]] = {}  # Store all MQTT data
+        self._reconnect_attempts = 0
+        self._max_reconnect_delay = 300  # Max 5 minutes between reconnection attempts
 
     def _on_connect(
         self, client: mqtt_client.Client, userdata: Any, flags: dict, rc: int
@@ -57,6 +61,7 @@ class EurotronicMQTTClient:
         if rc == 0:
             _LOGGER.info("Connected to MQTT broker at %s:%d", self.broker, self.port)
             self._connected = True
+            self._reconnect_attempts = 0  # Reset reconnect counter on successful connection
             # Subscribe to device messages
             client.subscribe(self._subscription_topic, qos=1)
             _LOGGER.debug("Subscribed to: %s", self._subscription_topic)
@@ -69,7 +74,18 @@ class EurotronicMQTTClient:
     ) -> None:
         """Handle MQTT disconnection."""
         if rc != 0:
-            _LOGGER.warning("Unexpected disconnection from MQTT broker, code %d", rc)
+            # Log at debug level instead of warning to reduce log spam
+            # Error code 7 is a common transient disconnection
+            _LOGGER.debug("Unexpected disconnection from MQTT broker, code %d", rc)
+            self._reconnect_attempts += 1
+            
+            # Schedule reconnection with exponential backoff
+            delay = min(2 ** self._reconnect_attempts, self._max_reconnect_delay)
+            _LOGGER.debug(
+                "Will attempt reconnection in %d seconds (attempt %d)",
+                delay,
+                self._reconnect_attempts,
+            )
         self._connected = False
 
     def _on_message(
@@ -103,7 +119,9 @@ class EurotronicMQTTClient:
                             temp = int(hex_val, 16) / 2 if hex_val else None
                             if mac not in self._temperatures:
                                 self._temperatures[mac] = {}
+                                self._temperature_timestamps[mac] = {}
                             self._temperatures[mac][profile] = temp
+                            self._temperature_timestamps[mac][profile] = time.time()
                             _LOGGER.debug(
                                 "Temperature update - MAC: %s, Profile: %s, Value: %.1f°C",
                                 mac,
@@ -176,7 +194,10 @@ class EurotronicMQTTClient:
         """
         try:
             self.client.username_pw_set(self.username, self.password)
-            self.client.connect(self.broker, self.port, keepalive=60)
+            # Increase keepalive to 120 seconds for more robust connection
+            # Enable automatic reconnection
+            self.client.reconnect_delay_set(min_delay=1, max_delay=120)
+            self.client.connect(self.broker, self.port, keepalive=120)
             
             # Start the network loop in a separate thread
             self.client.loop_start()
@@ -218,6 +239,35 @@ class EurotronicMQTTClient:
             Temperature in Celsius or None if not available.
         """
         return self._temperatures.get(mac, {}).get(profile)
+
+    def get_temperature_age(self, mac: str, profile: str = "A1") -> float | None:
+        """Get age of stored temperature in seconds.
+        
+        Args:
+            mac: Device MAC address
+            profile: Temperature profile (A1=current, A0=target)
+            
+        Returns:
+            Age in seconds or None if no temperature available.
+        """
+        timestamp = self._temperature_timestamps.get(mac, {}).get(profile)
+        if timestamp is None:
+            return None
+        return time.time() - timestamp
+
+    def has_recent_temperature(self, mac: str, profile: str = "A1", max_age: float = 600) -> bool:
+        """Check if we have a recent temperature reading.
+        
+        Args:
+            mac: Device MAC address
+            profile: Temperature profile (A1=current, A0=target)
+            max_age: Maximum age in seconds (default 600 = 10 minutes)
+            
+        Returns:
+            True if temperature exists and is not older than max_age.
+        """
+        age = self.get_temperature_age(mac, profile)
+        return age is not None and age <= max_age
 
     def get_device_data(self, mac: str) -> dict[str, Any]:
         """Get all stored MQTT data for device.
