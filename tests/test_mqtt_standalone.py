@@ -195,7 +195,8 @@ def main():
     print(f"\n📡 MQTT Configuration:")
     print(f"   Broker: {MQTT_BROKER}:{MQTT_PORT}")
     print(f"   Username: {mqtt_username}")
-    print(f"   Password: {mqtt_password}")
+    masked_password = "*" * len(mqtt_password) if mqtt_password else ""
+    print(f"   Password: {masked_password}")
     
     # Connect to MQTT
     client = EurotronicMQTTTest(mqtt_username, mqtt_password)
