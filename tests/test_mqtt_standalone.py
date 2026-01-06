@@ -104,7 +104,7 @@ class EurotronicMQTTTest:
             
             print(f"\n🔌 Connecting to {MQTT_BROKER}:{MQTT_PORT}...")
             print(f"   Username: {self.username}")
-            print(f"   Password: {self.password}")
+            print("   Password: ****** (hidden)")
             
             self.client.connect(MQTT_BROKER, MQTT_PORT, 60)
             self.client.loop_start()
